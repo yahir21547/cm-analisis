@@ -2,6 +2,20 @@
 # Bloque AZUL (I2/Q2/A4:B22) intacto + Bloque NARANJA (I8/Q8/R3:S14), NEMA H3:H30.
 # Coincidencia EXACTA para VLOOKUP; si no hay clave exacta => " ".
 
+"""Tkinter application that mirrors the original Excel workbook.
+
+Blue block
+    • Input: HP (I2) and ambient °C (Q2).
+    • Lookup table: A4:B22 to obtain the load fraction.
+
+Orange block
+    • Input: base HP (I8) and altitude FASL/MASL (Q8).
+    • Lookup table: R3:S14 for altitude→load fraction mapping.
+
+NEMA motor sizes are read from H3:H30.  All lookups require an exact
+match; if the key is absent an empty string is shown.
+"""
+
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
