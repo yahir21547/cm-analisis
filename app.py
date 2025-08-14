@@ -269,18 +269,25 @@ class App(tk.Tk):
         self.b_l2 = self._ro(blue_out2, "Required HP (L2=I2*1.15):", 0)
         self.b_l3 = self._ro(blue_out2, "NEMA HP (L3):", 1)
 
-        blue_out3 = ttk.LabelFrame(
+        blue_amb_load = ttk.LabelFrame(
             self,
-            text="AZUL — Ambient & Load (Q2, U2) / New Rating (Y2:Y4)",
+            text="AZUL — Ambient & Load",
             style="Blue.TLabelframe",
         )
-        blue_out3.place(x=10, y=390, width=730, height=140)
-        self.b_q2  = self._ro(blue_out3, "Ambient (Q2):", 0)
-        self.b_u2  = self._ro(blue_out3, "U2=VLOOKUP(A4:B22)/100:", 1)
-        self.b_y2  = self._ro(blue_out3, "HP (Y2=I2/U2):", 2)
-        self.b_y2kw= self._ro(blue_out3, "kW (Y3=Y2/1.341):", 3)
-        self.b_y2w = self._ro(blue_out3, "W (Y4=kW*1000):", 4)
-        self.b_y2n = self._ro(blue_out3, "NEMA HP (Y2):", 5)
+        blue_amb_load.place(x=10, y=390, width=360, height=80)
+        self.b_q2 = self._ro(blue_amb_load, "Ambient (Q2) °C:", 0)
+        self.b_u2 = self._ro(blue_amb_load, "Load =", 1)
+
+        blue_new = ttk.LabelFrame(
+            self,
+            text="AZUL — New Rating",
+            style="Blue.TLabelframe",
+        )
+        blue_new.place(x=380, y=390, width=360, height=140)
+        self.b_y2  = self._ro(blue_new, "HP (Y2=I2/U2):", 0)
+        self.b_y2kw= self._ro(blue_new, "kW (Y3=Y2/1.341):", 1)
+        self.b_y2w = self._ro(blue_new, "W (Y4=kW*1000):", 2)
+        self.b_y2n = self._ro(blue_new, "NEMA HP (Y2):", 3)
 
         blue_tol = ttk.LabelFrame(self, text="AZUL — Tolerancia (EC)", style="Blue.TLabelframe")
         blue_tol.place(x=10, y=540, width=360, height=110)
