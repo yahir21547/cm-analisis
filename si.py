@@ -145,14 +145,21 @@ class App(tk.Tk):
         self.load_from_excel(preload=True)
 
     # ---- UI helpers ----
-    def _ro(self, parent, label, row, width=16):
+    def _ro(self, parent, label, row, width=16, readonly=False):
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", padx=8, pady=6)
         v = tk.StringVar(value=BLANK)
-        ttk.Entry(parent, width=width, textvariable=v, state="readonly").grid(row=row, column=1, padx=8, pady=6)
+        state = "readonly" if readonly else "normal"
+        ttk.Entry(parent, width=width, textvariable=v, state=state).grid(row=row, column=1, padx=8, pady=6)
         return v
 
     def _build_ui(self):
         pad = {"padx": 8, "pady": 6}
+
+        style = ttk.Style(self)
+        style.configure("Blue.TLabelframe", background="#d9edf7")
+        style.configure("Blue.TLabelframe.Label", background="#d9edf7")
+        style.configure("Orange.TLabelframe", background="#ffe5b4")
+        style.configure("Orange.TLabelframe.Label", background="#ffe5b4")
 
         # fuente de datos
         top = ttk.LabelFrame(self, text="Fuente (Excel)")
@@ -169,12 +176,13 @@ class App(tk.Tk):
 
         ttk.Button(top, text="Cargar tablas", command=self.load_from_excel).grid(row=1, column=2, **pad)
         ttk.Button(top, text="Limpiar todo", command=self.clear_all).grid(row=1, column=3, **pad)
+        ttk.Button(top, text="Ver fórmulas", command=self.show_formulas).grid(row=1, column=4, **pad)
 
         self.lbl_status = ttk.Label(top, text="Tablas no cargadas")
         self.lbl_status.grid(row=2, column=0, columnspan=5, sticky="w", padx=10)
 
         # ===== BLOQUE AZUL (INTACTO) =====
-        blue_in = ttk.LabelFrame(self, text="AZUL — Entradas")
+        blue_in = ttk.LabelFrame(self, text="AZUL — Entradas", style="Blue.TLabelframe")
         blue_in.place(x=10, y=140, width=560, height=80)
 
         ttk.Label(blue_in, text="HP (I2):").grid(row=0, column=0, sticky="w", padx=8, pady=6)
@@ -187,18 +195,18 @@ class App(tk.Tk):
 
         ttk.Button(blue_in, text="Calcular AZUL", command=self.calc_blue).grid(row=0, column=4, padx=8, pady=6)
 
-        blue_out1 = ttk.LabelFrame(self, text="AZUL — Base rating (I2, I3, I4)")
+        blue_out1 = ttk.LabelFrame(self, text="AZUL — Base rating (I2, I3, I4)", style="Blue.TLabelframe")
         blue_out1.place(x=10, y=230, width=360, height=150)
         self.b_i2  = self._ro(blue_out1, "HP (I2):", 0)
         self.b_i3  = self._ro(blue_out1, "kW (I3=I2/1.341):", 1)
         self.b_i4  = self._ro(blue_out1, "W (I4=kW*1000):", 2)
 
-        blue_out2 = ttk.LabelFrame(self, text="AZUL — 50 Hz Rating (L2, L3)")
+        blue_out2 = ttk.LabelFrame(self, text="AZUL — 50 Hz Rating (L2, L3)", style="Blue.TLabelframe")
         blue_out2.place(x=380, y=230, width=360, height=150)
         self.b_l2 = self._ro(blue_out2, "Required HP (L2=I2*1.15):", 0)
         self.b_l3 = self._ro(blue_out2, "NEMA HP (L3):", 1)
 
-        blue_out3 = ttk.LabelFrame(self, text="AZUL — Ambient & Load (Q2, U2) / New Rating (Y2:Y4)")
+        blue_out3 = ttk.LabelFrame(self, text="AZUL — Ambient & Load (Q2, U2) / New Rating (Y2:Y4)", style="Blue.TLabelframe")
         blue_out3.place(x=10, y=390, width=730, height=180)
         self.b_q2  = self._ro(blue_out3, "Ambient (Q2):", 0)
         self.b_u2  = self._ro(blue_out3, "U2=VLOOKUP(A4:B22)/100:", 1)
@@ -208,7 +216,7 @@ class App(tk.Tk):
         self.b_y2n = self._ro(blue_out3, "NEMA HP (Y2):", 5)
 
         # ===== BLOQUE NARANJA =====
-        orange_in = ttk.LabelFrame(self, text="NARANJA — Entradas")
+        orange_in = ttk.LabelFrame(self, text="NARANJA — Entradas", style="Orange.TLabelframe")
         orange_in.place(x=760, y=140, width=410, height=80)
         ttk.Label(orange_in, text="Base HP (I8):").grid(row=0, column=0, sticky="w", padx=8, pady=6)
         self.i8_hp = tk.StringVar()
@@ -218,7 +226,7 @@ class App(tk.Tk):
         ttk.Entry(orange_in, width=12, textvariable=self.q8_fasl).grid(row=0, column=3, padx=8, pady=6)
         ttk.Button(orange_in, text="Calcular NARANJA", command=self.calc_orange).grid(row=0, column=4, padx=8, pady=6)
 
-        orange_base = ttk.LabelFrame(self, text="NARANJA — Base rating (I8,I9,I10) y 50 Hz (L8,L9)")
+        orange_base = ttk.LabelFrame(self, text="NARANJA — Base rating (I8,I9,I10) y 50 Hz (L8,L9)", style="Orange.TLabelframe")
         orange_base.place(x=760, y=230, width=410, height=150)
         self.o_i8  = self._ro(orange_base, "HP (I8):", 0)
         self.o_i9  = self._ro(orange_base, "kW (I9=I8/1.341):", 1)
@@ -226,7 +234,7 @@ class App(tk.Tk):
         self.o_l8  = self._ro(orange_base, "Required HP (L8=I8*1.15):", 3)
         self.o_l9  = self._ro(orange_base, "NEMA HP (L9):", 4)
 
-        orange_new = ttk.LabelFrame(self, text="NARANJA — Load (U8), New Rating (Y8) y Tolerancias")
+        orange_new = ttk.LabelFrame(self, text="NARANJA — Load (U8), New Rating (Y8) y Tolerancias", style="Orange.TLabelframe")
         orange_new.place(x=760, y=390, width=410, height=300)
         self.o_u8   = self._ro(orange_new, "U8=VLOOKUP(R3:S14)/100:", 0)
         self.o_y8   = self._ro(orange_new, "HP (Y8=I8/U8):", 1)
@@ -412,6 +420,30 @@ class App(tk.Tk):
             self.o_ab8, self.o_ab9, self.o_ae8, self.o_ae9, self.o_ah8, self.o_ah9
         ]:
             v.set(BLANK)
+
+    def show_formulas(self):
+        text = (
+            "Bloque AZUL:\n"
+            "  I3 = I2 / 1.341\n"
+            "  I4 = I3 * 1000\n"
+            "  L2 = I2 * 1.15\n"
+            "  L3 = NEMA(L2)\n"
+            "  U2 = VLOOKUP(A4:B22)/100\n"
+            "  Y2 = I2 / U2\n"
+            "  Y3 = Y2 / 1.341\n"
+            "  Y4 = Y3 * 1000\n"
+            "\nBloque NARANJA:\n"
+            "  I9 = I8 / 1.341\n"
+            "  I10 = I9 * 1000\n"
+            "  L8 = I8 * 1.15\n"
+            "  L9 = NEMA(L8)\n"
+            "  U8 = VLOOKUP(R3:S14)/100\n"
+            "  Y8 = I8 / U8\n"
+            "  AB8 = Y8 * 0.94\n"
+            "  AE8 = Y8 * 1.15\n"
+            "  AH8 = AE8 * 0.94\n"
+        )
+        messagebox.showinfo("Fórmulas", text)
 
     def pick_excel(self):
         path = filedialog.askopenfilename(
