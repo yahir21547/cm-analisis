@@ -192,7 +192,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Excel → Tkinter (Bloque AZUL intacto + Bloque NARANJA)")
-        self.geometry("1180x720")
+        self.geometry("1180x840")
         self.resizable(False, False)
 
         # tablas desde Excel
@@ -269,14 +269,33 @@ class App(tk.Tk):
         self.b_l2 = self._ro(blue_out2, "Required HP (L2=I2*1.15):", 0)
         self.b_l3 = self._ro(blue_out2, "NEMA HP (L3):", 1)
 
-        blue_out3 = ttk.LabelFrame(self, text="AZUL — Ambient & Load (Q2, U2) / New Rating (Y2:Y4)", style="Blue.TLabelframe")
-        blue_out3.place(x=10, y=390, width=730, height=180)
+        blue_out3 = ttk.LabelFrame(
+            self,
+            text="AZUL — Ambient & Load (Q2, U2) / New Rating (Y2:Y4)",
+            style="Blue.TLabelframe",
+        )
+        blue_out3.place(x=10, y=390, width=730, height=140)
         self.b_q2  = self._ro(blue_out3, "Ambient (Q2):", 0)
         self.b_u2  = self._ro(blue_out3, "U2=VLOOKUP(A4:B22)/100:", 1)
         self.b_y2  = self._ro(blue_out3, "HP (Y2=I2/U2):", 2)
         self.b_y2kw= self._ro(blue_out3, "kW (Y3=Y2/1.341):", 3)
         self.b_y2w = self._ro(blue_out3, "W (Y4=kW*1000):", 4)
         self.b_y2n = self._ro(blue_out3, "NEMA HP (Y2):", 5)
+
+        blue_tol = ttk.LabelFrame(self, text="AZUL — Tolerancia (EC)", style="Blue.TLabelframe")
+        blue_tol.place(x=10, y=540, width=360, height=110)
+        self.b_ab2 = self._ro(blue_tol, "Required HP (AB2=Y2*0.94):", 0)
+        self.b_ab3 = self._ro(blue_tol, "NEMA HP (AB3):", 1)
+
+        blue_50y2 = ttk.LabelFrame(self, text="AZUL — 50 Hz Rating (desde Y2)", style="Blue.TLabelframe")
+        blue_50y2.place(x=380, y=540, width=360, height=110)
+        self.b_ae2 = self._ro(blue_50y2, "Required HP (AE2=Y2*1.15):", 0)
+        self.b_ae3 = self._ro(blue_50y2, "NEMA HP (AE3):", 1)
+
+        blue_tol2 = ttk.LabelFrame(self, text="AZUL — Tolerancia (EC+50Hz)", style="Blue.TLabelframe")
+        blue_tol2.place(x=10, y=660, width=360, height=110)
+        self.b_ah2 = self._ro(blue_tol2, "Required HP (AH2=AE2*0.94):", 0)
+        self.b_ah3 = self._ro(blue_tol2, "NEMA HP (AH3):", 1)
 
         # ===== BLOQUE NARANJA =====
         orange_in = ttk.LabelFrame(self, text="NARANJA — Entradas", style="Orange.TLabelframe")
@@ -383,12 +402,30 @@ class App(tk.Tk):
         # Y2, kW, W, NEMA(Y2)
         if not base_ok or u2 is None:
             self.b_y2.set(BLANK); self.b_y2kw.set(BLANK); self.b_y2w.set(BLANK); self.b_y2n.set(BLANK)
+            self.b_ab2.set(BLANK); self.b_ab3.set(BLANK)
+            self.b_ae2.set(BLANK); self.b_ae3.set(BLANK)
+            self.b_ah2.set(BLANK); self.b_ah3.set(BLANK)
         else:
             y2 = i2 / u2
             self.b_y2.set(fmt(y2))
             self.b_y2kw.set(fmt(to_kw(y2)))
             self.b_y2w.set(fmt(to_watts(y2)))
             self.b_y2n.set(fmt(pick_nema_hp(y2, self.nema_steps)))
+
+            # Tolerancia EC: AB2=Y2*0.94, AB3=NEMA(AB2)
+            ab2 = y2 * 0.94
+            self.b_ab2.set(fmt(ab2))
+            self.b_ab3.set(fmt(pick_nema_hp(ab2, self.nema_steps)))
+
+            # 50Hz desde Y2: AE2=Y2*1.15, AE3=NEMA(AE2)
+            ae2 = y2 * 1.15
+            self.b_ae2.set(fmt(ae2))
+            self.b_ae3.set(fmt(pick_nema_hp(ae2, self.nema_steps)))
+
+            # EC + 50Hz: AH2=AE2*0.94, AH3=NEMA(AH2)
+            ah2 = ae2 * 0.94
+            self.b_ah2.set(fmt(ah2))
+            self.b_ah3.set(fmt(pick_nema_hp(ah2, self.nema_steps)))
 
     # ---- Cálculos NARANJA (idéntico a tus fórmulas) ----
     def calc_orange(self):
@@ -476,6 +513,7 @@ class App(tk.Tk):
             self.i2_hp, self.q2_amb,
             # azul outs
             self.b_i2, self.b_i3, self.b_i4, self.b_l2, self.b_l3, self.b_q2, self.b_u2, self.b_y2, self.b_y2kw, self.b_y2w, self.b_y2n,
+            self.b_ab2, self.b_ab3, self.b_ae2, self.b_ae3, self.b_ah2, self.b_ah3,
             # naranja inputs
             self.i8_hp, self.q8_fasl,
             # naranja outs
@@ -495,6 +533,9 @@ class App(tk.Tk):
             "  Y2 = I2 / U2\n"
             "  Y3 = Y2 / 1.341\n"
             "  Y4 = Y3 * 1000\n"
+            "  AB2 = Y2 * 0.94\n"
+            "  AE2 = Y2 * 1.15\n"
+            "  AH2 = AE2 * 0.94\n"
             "\nBloque NARANJA:\n"
             "  I9 = I8 / 1.341\n"
             "  I10 = I9 * 1000\n"
